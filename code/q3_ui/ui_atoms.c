@@ -873,18 +873,18 @@ void UI_MouseEvent( int dx, int dy )
 {
 	int				i;
 	menucommon_s*	m;
-
+	//printf(__FILE__ " UI_MouseEvent(%d,%d)\n", dx, dy);
 	if (!uis.activemenu)
 		return;
 
 	// update mouse screen position
-	uis.cursorx += dx;
+	uis.cursorx = dx;
 	if (uis.cursorx < 0)
 		uis.cursorx = 0;
 	else if (uis.cursorx > SCREEN_WIDTH)
 		uis.cursorx = SCREEN_WIDTH;
 
-	uis.cursory += dy;
+	uis.cursory = dy;
 	if (uis.cursory < 0)
 		uis.cursory = 0;
 	else if (uis.cursory > SCREEN_HEIGHT)

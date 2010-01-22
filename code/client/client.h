@@ -113,6 +113,9 @@ typedef struct {
 
 	int			mouseDx[2], mouseDy[2];	// added to by mouse events
 	int			mouseIndex;
+	int			accelDx[2], accelDy[2];	// added to by accel events
+	int			accelIndex;
+	int			posnPx, posnPy;	// set by touchscreen events
 	int			joystickAxis[MAX_JOYSTICK_AXIS];	// set by joystick events
 
 	// cgame communicates a few values to the client system
