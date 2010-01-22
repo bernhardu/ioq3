@@ -26,19 +26,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
-#ifdef STANDALONE
-  #define PRODUCT_NAME			"iofoo3"
-  #define BASEGAME			"foobar"
-  #define CLIENT_WINDOW_TITLE     	"changeme"
-  #define CLIENT_WINDOW_MIN_TITLE 	"changeme2"
-  #define GAMENAME_FOR_MASTER		"iofoo3"	// must NOT contain whitespaces
-#else
-  #define PRODUCT_NAME			"ioq3"
-  #define BASEGAME			"baseq3"
-  #define CLIENT_WINDOW_TITLE     	"ioquake3"
-  #define CLIENT_WINDOW_MIN_TITLE 	"ioq3"
-  #define GAMENAME_FOR_MASTER		"Quake3Arena"
-#endif
+#define PRODUCT_NAME			"ioq3"
+#define BASEGAME			"baseq3"
+#define CLIENT_WINDOW_TITLE     	"ioquake3"
+#define CLIENT_WINDOW_MIN_TITLE 	"ioq3"
+#define GAMENAME_FOR_MASTER		"Quake3Arena"
 
 #ifdef _MSC_VER
   #define PRODUCT_VERSION "1.35"
@@ -165,9 +157,9 @@ typedef int		clipHandle_t;
 #define PAD(x,y) (((x)+(y)-1) & ~((y)-1))
 
 #ifdef __GNUC__
-#define ALIGN(x) __attribute__((aligned(x)))
+#define QALIGN(x) __attribute__((aligned(x)))
 #else
-#define ALIGN(x)
+#define QALIGN(x)
 #endif
 
 #ifndef NULL
@@ -417,6 +409,16 @@ static ID_INLINE float Q_fabs(float x) {
 #define Q_fabs __fabsf
 #endif
 
+#elif idarm
+static ID_INLINE float Q_rsqrt(float number)
+{
+	return 1.0 / sqrtf(number);
+}
+
+static ID_INLINE float Q_fabs(float x)
+{
+	return fabsf(x);
+}
 #else
 float Q_fabs( float f );
 float Q_rsqrt( float f );		// reciprocal square root

@@ -46,8 +46,10 @@ Sys_DefaultHomePath
 */
 char *Sys_DefaultHomePath(void)
 {
-	char *p;
+	char p[] = "/sdcard/quake3";
+	Q_strncpyz( homePath, p, sizeof( homePath ) );
 
+#if 0
 	if( !*homePath )
 	{
 		if( ( p = getenv( "HOME" ) ) != NULL )
@@ -68,7 +70,7 @@ char *Sys_DefaultHomePath(void)
 			}
 		}
 	}
-
+#endif
 	return homePath;
 }
 

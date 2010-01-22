@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <ctype.h>
 #include <errno.h>
 
+#if !defined(NOKIA)
 #ifndef DEDICATED
 #ifdef USE_LOCAL_HEADERS
 #	include "SDL.h"
@@ -40,12 +41,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #	include <SDL_cpuinfo.h>
 #endif
 #endif
+#endif
 
 #include "sys_local.h"
 #include "sys_loadlib.h"
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
+
+#include <android/log.h>
 
 static char binaryPath[ MAX_OSPATH ] = { 0 };
 static char installPath[ MAX_OSPATH ] = { 0 };
@@ -138,8 +142,10 @@ void Sys_Exit( int ex )
 {
 	CON_Shutdown( );
 
+#if !defined(NOKIA)
 #ifndef DEDICATED
 	SDL_Quit( );
+#endif
 #endif
 
 #ifdef NDEBUG
@@ -171,6 +177,7 @@ cpuFeatures_t Sys_GetProcessorFeatures( void )
 {
 	cpuFeatures_t features = 0;
 
+#if !defined(NOKIA)
 #ifndef DEDICATED
 	if( SDL_HasRDTSC( ) )    features |= CF_RDTSC;
 	if( SDL_HasMMX( ) )      features |= CF_MMX;
@@ -180,6 +187,7 @@ cpuFeatures_t Sys_GetProcessorFeatures( void )
 	if( SDL_HasSSE( ) )      features |= CF_SSE;
 	if( SDL_HasSSE2( ) )     features |= CF_SSE2;
 	if( SDL_HasAltiVec( ) )  features |= CF_ALTIVEC;
+#endif
 #endif
 
 	return features;
@@ -400,7 +408,10 @@ void *Sys_LoadDll( const char *name, char *fqpath ,
 
 	assert( name );
 
-	Q_snprintf (fname, sizeof(fname), "%s" ARCH_STRING DLL_EXT, name);
+	/* On android libraries need to be prefixed with 'lib' else the loader
+	 * refuses to load them.
+	 */
+	Q_snprintf (fname, sizeof(fname), "lib%s" ARCH_STRING DLL_EXT, name);
 
 	// TODO: use fs_searchpaths from files.c
 	pwdpath = Sys_Cwd();
@@ -408,7 +419,11 @@ void *Sys_LoadDll( const char *name, char *fqpath ,
 	homepath = Cvar_VariableString( "fs_homepath" );
 	gamedir = Cvar_VariableString( "fs_game" );
 
-	libHandle = Sys_TryLibraryLoad(pwdpath, gamedir, fname, fqpath);
+	/* The libraries are shipped in the package directory and can't be loaded from
+	 * e.g. the sdcard because it seems to be mounted noexec or the loader just doesn't
+	 * allow it.
+	 */
+	libHandle = Sys_TryLibraryLoad(pwdpath, "/data/data/org.kwaak3/lib", fname, fqpath);
 
 	if(!libHandle && homepath)
 		libHandle = Sys_TryLibraryLoad(homepath, gamedir, fname, fqpath);
@@ -505,7 +520,9 @@ int main( int argc, char **argv )
 {
 	int   i;
 	char  commandLine[ MAX_STRING_CHARS ] = { 0 };
+    __android_log_print(ANDROID_LOG_DEBUG, "Quake", "Inside Quake3 source!");
 
+#if !defined(NOKIA)
 #ifndef DEDICATED
 	// SDL version check
 
@@ -529,6 +546,7 @@ int main( int argc, char **argv )
 		Sys_Exit( 1 );
 	}
 #endif
+#endif
 
 	Sys_PlatformInit( );
 
@@ -536,7 +554,7 @@ int main( int argc, char **argv )
 	Sys_Milliseconds( );
 
 	Sys_ParseArgs( argc, argv );
-	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
+//	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
 	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
 
 	// Concatenate the command line for passing to Com_Init
@@ -556,19 +574,26 @@ int main( int argc, char **argv )
 	signal( SIGSEGV, Sys_SigHandler );
 	signal( SIGTERM, Sys_SigHandler );
 
+#if 0
 	while( 1 )
 	{
+#if !defined(NOKIA)
 #ifndef DEDICATED
 		int appState = SDL_GetAppState( );
 
 		Cvar_SetValue( "com_unfocused",	!( appState & SDL_APPINPUTFOCUS ) );
 		Cvar_SetValue( "com_minimized", !( appState & SDL_APPACTIVE ) );
 #endif
+#endif
 
-		IN_Frame( );
-		Com_Frame( );
 	}
+#endif
 
 	return 0;
 }
 
+void nextFrame()
+{
+	IN_Frame( );
+	Com_Frame( );
+}
