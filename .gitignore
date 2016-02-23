@@ -1,9 +1,9 @@
 *.o
 *.so
-kwaak/project/build.xml
-kwaak/project/local.properties
-kwaak/project/proguard-project.txt
-kwaak/project/project.properties
-kwaak/project/bin/*
-kwaak/project/gen/*
-kwaak/project/obj/*
+misc/kwaak3/project/build.xml
+misc/kwaak3/project/local.properties
+misc/kwaak3/project/proguard-project.txt
+misc/kwaak3/project/project.properties
+misc/kwaak3/project/bin/*
+misc/kwaak3/project/gen/*
+misc/kwaak3/project/obj/*
