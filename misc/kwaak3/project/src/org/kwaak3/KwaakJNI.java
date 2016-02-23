@@ -33,6 +33,7 @@ public class KwaakJNI {
 	/* Initialize the game engine */
 	public static native void initGame(int width, int height);
 
+	public static native void setGameDirectory(String path);
 	public static native void setLibraryDirectory(String path);
 
 	/* Compute and draw a new frame */
