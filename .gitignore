@@ -1,0 +1,10 @@
+*.o
+*.so
+misc/kwaak3/project/build.xml
+misc/kwaak3/project/local.properties
+misc/kwaak3/project/proguard-project.txt
+misc/kwaak3/project/project.properties
+misc/kwaak3/project/bin/*
+misc/kwaak3/project/gen/*
+misc/kwaak3/project/obj/*
+Makefile.local
