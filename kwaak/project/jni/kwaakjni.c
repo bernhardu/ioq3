@@ -36,10 +36,10 @@ void (*setInputCallbacks)(void *func);
 void (*setResolution)(int width, int height);
 
 /* Callbacks to Android */
-jmethodID android_getPos;
-jmethodID android_initAudio;
-jmethodID android_writeAudio;
-jmethodID android_setMenuState;
+jmethodID android_getPos=NULL;
+jmethodID android_initAudio=NULL;
+jmethodID android_writeAudio=NULL;
+jmethodID android_setMenuState=NULL;
 
 /* Contains the game directory e.g. /mnt/sdcard/quake3 */
 static char* game_dir=NULL;
@@ -163,6 +163,12 @@ int getPos()
 #ifdef DEBUG
     __android_log_print(ANDROID_LOG_DEBUG, "Quake_JNI", "getPos");
 #endif
+
+    if (!android_getPos) {
+        __android_log_print(ANDROID_LOG_ERROR, "Quake_JNI", "android_getPos is not set.");
+        return 0;
+    }
+
     return (*env)->CallIntMethod(env, kwaakAudioObj, android_getPos);
 }
 
@@ -179,6 +185,11 @@ void initAudio(void *buffer, int size)
 
     if(!audioBuffer) __android_log_print(ANDROID_LOG_ERROR, "Quake_JNI", "yikes, unable to initialize audio buffer");
 
+    if (!android_initAudio) {
+        __android_log_print(ANDROID_LOG_ERROR, "Quake_JNI", "android_initAudio is not set.");
+        return;
+    }
+
     return (*env)->CallVoidMethod(env, kwaakAudioObj, android_initAudio);
 }
 
@@ -190,6 +201,11 @@ void writeAudio(int offset, int length)
     __android_log_print(ANDROID_LOG_DEBUG, "Quake_JNI", "writeAudio audioBuffer=%p offset=%d length=%d", audioBuffer, offset, length);
 #endif
 
+    if (!android_writeAudio) {
+        __android_log_print(ANDROID_LOG_ERROR, "Quake_JNI", "android_writeAudio is not set.");
+        return;
+    }
+
     (*env)->CallVoidMethod(env, kwaakAudioObj, android_writeAudio, audioBuffer, offset, length);
 }
 
@@ -200,6 +216,11 @@ void setMenuState(int state)
 #ifdef DEBUG
     __android_log_print(ANDROID_LOG_DEBUG, "Quake_JNI", "setMenuState state=%d", state);
 #endif
+
+    if (!android_setMenuState) {
+        __android_log_print(ANDROID_LOG_ERROR, "Quake_JNI", "android_setMenuState is not set.");
+        return;
+    }
 
     (*env)->CallVoidMethod(env, kwaakRendererObj, android_setMenuState, state);
 }
