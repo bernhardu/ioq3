@@ -42,6 +42,7 @@ class KwaakView extends GLSurfaceView {
 			e.printStackTrace();
 			lib_dir = "/data/data/org.kwaak3/lib";
 		}
+		KwaakJNI.setGameDirectory(android.os.Environment.getExternalStorageDirectory().getPath() + "/quake3");
 		KwaakJNI.setLibraryDirectory(lib_dir);
 		
 		mKwaakRenderer = new KwaakRenderer();
