@@ -1,0 +1,9 @@
+*.o
+*.so
+kwaak/project/build.xml
+kwaak/project/local.properties
+kwaak/project/proguard-project.txt
+kwaak/project/project.properties
+kwaak/project/bin/*
+kwaak/project/gen/*
+kwaak/project/obj/*
