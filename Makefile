@@ -245,6 +245,7 @@ RGL1DIR=$(MOUNT_DIR)/renderergl1
 RGL2DIR=$(MOUNT_DIR)/renderergl2
 CMDIR=$(MOUNT_DIR)/qcommon
 SDLDIR=$(MOUNT_DIR)/sdl
+ANDROIDDIR=$(MOUNT_DIR)/android
 ASMDIR=$(MOUNT_DIR)/asm
 SYSDIR=$(MOUNT_DIR)/sys
 GDIR=$(MOUNT_DIR)/game
@@ -364,11 +365,11 @@ ifneq (,$(findstring "$(PLATFORM)", "linux" "gnu_kfreebsd" "kfreebsd-gnu" "gnu")
   SHLIBCFLAGS=-fPIC -fvisibility=hidden
   SHLIBLDFLAGS=-shared $(LDFLAGS)
 
-  THREAD_LIBS=-lpthread
+  #THREAD_LIBS=-lpthread
   LIBS=-ldl -lm
 
   CLIENT_LIBS=$(SDL_LIBS)
-  RENDERER_LIBS = $(SDL_LIBS) -lGL
+  RENDERER_LIBS = $(SDL_LIBS) -lGLESv1_CM
 
   ifeq ($(USE_OPENAL),1)
     ifneq ($(USE_OPENAL_DLOPEN),1)
@@ -1624,8 +1625,8 @@ Q3OBJ = \
   $(B)/client/l_script.o \
   $(B)/client/l_struct.o \
   \
-  $(B)/client/sdl_input.o \
-  $(B)/client/sdl_snd.o \
+  $(B)/client/android_input.o \
+  $(B)/client/android_snd.o \
   \
   $(B)/client/con_log.o \
   $(B)/client/sys_main.o
@@ -1741,8 +1742,7 @@ Q3ROBJ = \
   $(B)/renderergl1/tr_surface.o \
   $(B)/renderergl1/tr_world.o \
   \
-  $(B)/renderergl1/sdl_gamma.o \
-  $(B)/renderergl1/sdl_glimp.o
+  $(B)/client/android_glimp.o
 
 ifneq ($(USE_RENDERER_DLOPEN), 0)
   Q3ROBJ += \
@@ -2553,6 +2553,9 @@ $(B)/client/%.o: $(ZDIR)/%.c
 	$(DO_CC)
 
 $(B)/client/%.o: $(SDLDIR)/%.c
+	$(DO_CC)
+
+$(B)/client/%.o: $(ANDROIDDIR)/%.c
 	$(DO_CC)
 
 $(B)/client/%.o: $(SYSDIR)/%.c
