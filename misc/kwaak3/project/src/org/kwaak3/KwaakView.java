@@ -111,6 +111,16 @@ class KwaakView extends GLSurfaceView {
 		return true;
 	}
 
+	public boolean queueOrientationEvent(final int azimuth, final int nick, final int roll)
+	{
+		/* Make sure all communication with Quake is done from the Renderer thread */
+		queueEvent(new Runnable(){
+			public void run() {
+				KwaakJNI.queueOrientationEvent(azimuth, nick, roll);
+		}});
+		return true;
+	}
+
 	private static final int QK_ENTER = 13;
 	private static final int QK_ESCAPE = 27;
 	private static final int QK_BACKSPACE = 127;

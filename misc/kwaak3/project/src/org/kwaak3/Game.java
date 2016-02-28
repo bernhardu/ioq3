@@ -24,14 +24,21 @@ import java.io.File;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
-public class Game extends Activity {
+public class Game extends Activity implements SensorEventListener {
 	private KwaakAudio mKwaakAudio;
 	private KwaakView mGLSurfaceView;
+	private SensorManager senSensorManager;
+	private Sensor senOrientation;
+	private long lastSensorUpdate = 0;
 
 	private void showError(String s)
 	{
@@ -123,6 +130,10 @@ public class Game extends Activity {
 		{
 			setContentView(R.layout.main);			
 		}
+
+		senSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		senOrientation = senSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+		senSensorManager.registerListener(this, senOrientation , SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
 	@Override
@@ -137,6 +148,8 @@ public class Game extends Activity {
 
 		if(mKwaakAudio != null)
 			mKwaakAudio.pause();
+
+		senSensorManager.unregisterListener(this);
 	}
 
 	@Override
@@ -154,5 +167,33 @@ public class Game extends Activity {
 
 		if(mKwaakAudio != null)
 			mKwaakAudio.resume();
+
+		senSensorManager.registerListener(this, senOrientation, SensorManager.SENSOR_DELAY_NORMAL);
+	}
+
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+	}
+
+	@Override
+	public void onSensorChanged(SensorEvent sensorEvent) {
+		Sensor mySensor = sensorEvent.sensor;
+		if (mySensor.getType() == Sensor.TYPE_ORIENTATION) {
+			float azimuth = sensorEvent.values[0];
+			float pitch = sensorEvent.values[1];
+			float roll = sensorEvent.values[2];
+			//Log.d("Quake_JAVA", "onSensorChanged(TYPE_ORIENTATION, azimuth[" + azimuth + "] pitch[" + pitch + "] roll[" + roll + "]");
+			if (mGLSurfaceView != null) {
+				long curTime = System.currentTimeMillis();
+
+				if ((curTime - lastSensorUpdate) > 50) {
+					long diffTime = (curTime - lastSensorUpdate);
+					lastSensorUpdate = curTime;
+
+					mGLSurfaceView.queueOrientationEvent((int)azimuth, (int)pitch, (int)roll);
+				}
+			}
+		}
 	}
 }

@@ -43,6 +43,7 @@ void nextFrame();
 void queueKeyEvent(int key, int state);
 void queueMotionEvent(int action, float x, float y, float pressure);
 void queueTrackballEvent(int action, float x, float y);
+void queueOrientationEvent(int azimuth, int nick, int roll);
 void requestAudioData();
 void setAudioCallbacks(void *func, void *func2, void *func3);
 void setInputCallbacks(void *func);
@@ -352,6 +353,12 @@ JNIEXPORT void JNICALL Java_org_kwaak3_KwaakJNI_queueTrackballEvent(JNIEnv *env,
 {
     LOG_TRACE("queueTrackballEvent(%d, %f, %f)", action, x, y);
     queueTrackballEvent(action, x, y);
+}
+
+JNIEXPORT void JNICALL Java_org_kwaak3_KwaakJNI_queueOrientationEvent(JNIEnv *env, jclass c, jint azimuth, jint nick, jint roll)
+{
+    /*LOG_TRACE("queueOrientationEvent(%d, %d, %d)", azimuth, nick, roll); // too noisy */
+    queueOrientationEvent(azimuth, nick, roll);
 }
 
 JNIEXPORT void JNICALL Java_org_kwaak3_KwaakJNI_requestAudioData(JNIEnv *env, jclass c)

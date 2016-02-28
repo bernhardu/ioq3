@@ -188,6 +188,31 @@ void queueTrackballEvent(int action, float dx, float dy)
     trackball_event = qtrue;
 }
 
+void queueOrientationEvent(int azimuth, int nick, int roll)
+{
+    enum directions { up, down, left, right, num_directions };
+    static int oldKeyPress[num_directions] = {0,0,0,0};
+    int newKeyPress[num_directions] = {0,0,0,0};
+    int keyConst[num_directions] = {K_UPARROW, K_DOWNARROW, K_LEFTARROW, K_RIGHTARROW};
+    int t = Sys_Milliseconds();
+
+    /*Com_Printf("queueOrientationEvent: %d %d %d\n", azimuth, nick, roll); // too noisy */
+
+    if (roll < -10) newKeyPress[up] = 1;
+    if (roll >  10) newKeyPress[down] = 1;
+    if (nick >  10) newKeyPress[left] = 1;
+    if (nick < -10) newKeyPress[right] = 1;
+
+    enum directions i;
+    for (i = up; i < num_directions; i++) {
+        if (newKeyPress[i] != oldKeyPress[i]) {
+            Com_QueueEvent(t, SE_KEY, keyConst[i], newKeyPress[i], 0, NULL);
+            Com_Printf("queueOrientationEvent: %d %d %d Com_QueueEvent newKeyPress[i]=%d keyConst[i]=%d K_UPARROW=%d\n", azimuth, nick, roll, newKeyPress[i], keyConst[i], K_UPARROW);
+        }
+        oldKeyPress[i] = newKeyPress[i];
+    }
+}
+
 inline float clamp_to_screen_width(float x)
 {
     if(x > SCREEN_WIDTH)

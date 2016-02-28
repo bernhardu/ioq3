@@ -43,6 +43,7 @@ public class KwaakJNI {
 	public static native void queueKeyEvent(int key, int state);
 	public static native void queueMotionEvent(int action, float x, float y, float pressure);
 	public static native void queueTrackballEvent(int action, float x, float y);
+	public static native void queueOrientationEvent(int azimuth, int nick, int roll);
 
 	public static native void requestAudioData();
 

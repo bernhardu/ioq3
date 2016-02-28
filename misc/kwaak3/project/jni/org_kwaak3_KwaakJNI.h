@@ -105,6 +105,14 @@ JNIEXPORT void JNICALL Java_org_kwaak3_KwaakJNI_queueTrackballEvent
 
 /*
  * Class:     org_kwaak3_KwaakJNI
+ * Method:    queueOrientationEvent
+ * Signature: (III)V
+ */
+JNIEXPORT void JNICALL Java_org_kwaak3_KwaakJNI_queueOrientationEvent
+  (JNIEnv *, jclass, jint, jint, jint);
+
+/*
+ * Class:     org_kwaak3_KwaakJNI
  * Method:    requestAudioData
  * Signature: ()V
  */
