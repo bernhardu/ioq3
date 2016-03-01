@@ -125,12 +125,23 @@ void R_RenderShadowEdges( void ) {
 			// if it doesn't share the edge with another front facing
 			// triangle, it is a sil edge
 			if ( hit[ 1 ] == 0 ) {
+#if !defined(__ANDROID__)
 				qglBegin( GL_TRIANGLE_STRIP );
 				qglVertex3fv( tess.xyz[ i ] );
 				qglVertex3fv( shadowXyz[ i ] );
 				qglVertex3fv( tess.xyz[ i2 ] );
 				qglVertex3fv( shadowXyz[ i2 ] );
 				qglEnd();
+#else
+				glIndex_t indicies[4];
+				indicies[0] = i;
+				indicies[1] = i + tess.numVertexes;
+				indicies[2] = i2;
+				indicies[3] = i2 + tess.numVertexes;
+
+				qglVertexPointer(3, GL_FLOAT, 16, tess.xyz);
+				qglDrawElements(GL_TRIANGLE_STRIP, 4, GL_INDEX_TYPE, indicies);
+#endif
 				c_edges++;
 			} else {
 				c_rejected++;
@@ -244,6 +255,14 @@ overlap and double darken.
 =================
 */
 void RB_ShadowFinish( void ) {
+	vec3_t quad[4] = {
+		{-100.0f,  100.0f, -10.0f},
+		{ 100.0f,  100.0f, -10.0f},
+		{ 100.0f, -100.0f, -10.0f},
+		{-100.0f, -100.0f, -10.0f}
+	};
+	glIndex_t indicies[6] = { 0, 1, 2, 0, 3, 2 };
+
 	if ( r_shadows->integer != 2 ) {
 		return;
 	}
@@ -266,12 +285,8 @@ void RB_ShadowFinish( void ) {
 //	qglColor3f( 1, 0, 0 );
 //	GL_State( GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO );
 
-	qglBegin( GL_QUADS );
-	qglVertex3f( -100, 100, -10 );
-	qglVertex3f( 100, 100, -10 );
-	qglVertex3f( 100, -100, -10 );
-	qglVertex3f( -100, -100, -10 );
-	qglEnd ();
+	qglVertexPointer(3, GL_FLOAT, 0, quad);
+	qglDrawElements(GL_TRIANGLE_STRIP, 6, GL_INDEX_TYPE, indicies);
 
 	qglColor4f(1,1,1,1);
 	qglDisable( GL_STENCIL_TEST );

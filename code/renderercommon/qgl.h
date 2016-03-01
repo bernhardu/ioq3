@@ -26,11 +26,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef __QGL_H__
 #define __QGL_H__
 
+#ifndef __ANDROID__
 #ifdef USE_LOCAL_HEADERS
 #	include "SDL_opengl.h"
 #else
 #	include <SDL_opengl.h>
 #endif
+#else /*ifndef __ANDROID__*/
+#include "../android/android_glimp.h"
+#endif /*ifndef __ANDROID__*/
 
 extern void (APIENTRYP qglActiveTextureARB) (GLenum texture);
 extern void (APIENTRYP qglClientActiveTextureARB) (GLenum texture);
@@ -42,6 +46,7 @@ extern void (APIENTRYP qglUnlockArraysEXT) (void);
 
 //===========================================================================
 
+#ifndef __ANDROID__
 #define qglAccum glAccum
 #define qglAlphaFunc glAlphaFunc
 #define qglAreTexturesResident glAreTexturesResident
@@ -376,6 +381,7 @@ extern void (APIENTRYP qglUnlockArraysEXT) (void);
 #define qglVertex4sv glVertex4sv
 #define qglVertexPointer glVertexPointer
 #define qglViewport glViewport
+#endif /*ifndef __ANDROID__*/
 
 // GL_EXT_draw_range_elements
 extern void     (APIENTRY * qglDrawRangeElementsEXT) (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);

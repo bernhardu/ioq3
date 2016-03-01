@@ -313,6 +313,7 @@ void GL_State( unsigned long stateBits )
 	//
 	// fill/line mode
 	//
+#if !defined(__ANDROID__)
 	if ( diff & GLS_POLYMODE_LINE )
 	{
 		if ( stateBits & GLS_POLYMODE_LINE )
@@ -324,6 +325,7 @@ void GL_State( unsigned long stateBits )
 			qglPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		}
 	}
+#endif
 
 	//
 	// depthtest
@@ -729,6 +731,9 @@ Used for cinematics.
 void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty) {
 	int			i, j;
 	int			start, end;
+	vec2_t texcoords[4];
+	vec2_t verts[4];
+	glIndex_t indicies[6] = { 0, 1, 2, 0, 3, 2 };
 
 	if ( !tr.registered ) {
 		return;
@@ -762,7 +767,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -784,16 +789,21 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 
 	qglColor3f( tr.identityLight, tr.identityLight, tr.identityLight );
 
-	qglBegin (GL_QUADS);
-	qglTexCoord2f ( 0.5f / cols,  0.5f / rows );
-	qglVertex2f (x, y);
-	qglTexCoord2f ( ( cols - 0.5f ) / cols ,  0.5f / rows );
-	qglVertex2f (x+w, y);
-	qglTexCoord2f ( ( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows );
-	qglVertex2f (x+w, y+h);
-	qglTexCoord2f ( 0.5f / cols, ( rows - 0.5f ) / rows );
-	qglVertex2f (x, y+h);
-	qglEnd ();
+	verts[0][0] = x;  verts[0][1] = y;
+	verts[1][0] = x+w;  verts[1][1] = y;
+	verts[2][0] = x+w;  verts[2][1] = y+h;
+	verts[3][0] = x;  verts[3][1] = y+h;
+	
+	texcoords[0][0] = 0.5f/cols;      texcoords[0][1] = 0.5f/rows;
+	texcoords[1][0] = (cols-0.5f)/cols;   texcoords[1][1] = 0.5f/rows;
+	texcoords[2][0] = (cols-0.5f)/cols;   texcoords[2][1] = (rows-0.5f)/rows;
+	texcoords[3][0] = 0.5f/cols;      texcoords[3][1] = (rows-0.5f)/rows;
+	
+	qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	qglTexCoordPointer( 2, GL_FLOAT, 0, texcoords );
+	qglVertexPointer  ( 2, GL_FLOAT, 0, verts );
+	qglDrawElements( GL_TRIANGLE_STRIP, 6, GL_INDEX_TYPE, indicies );
+	qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
 }
 
 void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty) {
@@ -804,7 +814,7 @@ void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int
 	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -976,6 +986,9 @@ void RB_ShowImages( void ) {
 	image_t	*image;
 	float	x, y, w, h;
 	int		start, end;
+	vec2_t texcoords[4] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
+	vec2_t verts[4];
+	glIndex_t indicies[6] = { 0, 1, 2, 0, 3, 2 };
 
 	if ( !backEnd.projection2D ) {
 		RB_SetGL2D();
@@ -986,6 +999,8 @@ void RB_ShowImages( void ) {
 	qglFinish();
 
 	start = ri.Milliseconds();
+
+	qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
 
 	for ( i=0 ; i<tr.numImages ; i++ ) {
 		image = tr.images[i];
@@ -1001,19 +1016,17 @@ void RB_ShowImages( void ) {
 			h *= image->uploadHeight / 512.0f;
 		}
 
-		GL_Bind( image );
-		qglBegin (GL_QUADS);
-		qglTexCoord2f( 0, 0 );
-		qglVertex2f( x, y );
-		qglTexCoord2f( 1, 0 );
-		qglVertex2f( x + w, y );
-		qglTexCoord2f( 1, 1 );
-		qglVertex2f( x + w, y + h );
-		qglTexCoord2f( 0, 1 );
-		qglVertex2f( x, y + h );
-		qglEnd();
+		verts[0][0] = x;  verts[0][1] = y;
+		verts[1][0] = x+w;  verts[1][1] = y;
+		verts[2][0] = x+w;  verts[2][1] = y+h;
+		verts[3][0] = x;  verts[3][1] = y+h;
+
+		qglTexCoordPointer( 2, GL_FLOAT, 0, texcoords );
+		qglVertexPointer  ( 2, GL_FLOAT, 0, verts );
+		qglDrawElements( GL_TRIANGLE_STRIP, 6, GL_INDEX_TYPE, indicies );
 	}
 
+	qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
 	qglFinish();
 
 	end = ri.Milliseconds();
@@ -1079,6 +1092,7 @@ const void	*RB_SwapBuffers( const void *data ) {
 
 	cmd = (const swapBuffersCommand_t *)data;
 
+#if !defined(__ANDROID__)
 	// we measure overdraw by reading back the stencil buffer and
 	// counting up the number of increments that have happened
 	if ( r_measureOverdraw->integer ) {
@@ -1096,6 +1110,7 @@ const void	*RB_SwapBuffers( const void *data ) {
 		backEnd.pc.c_overDraw += sum;
 		ri.Hunk_FreeTempMemory( stencilReadback );
 	}
+#endif
 
 
 	if ( !glState.finishCalled ) {

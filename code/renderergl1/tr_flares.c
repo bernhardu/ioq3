@@ -267,6 +267,8 @@ FLARE BACK END
 ===============================================================================
 */
 
+#if !defined(__ANDROID__)
+
 /*
 ==================
 RB_TestFlare
@@ -537,3 +539,8 @@ void RB_RenderFlares (void) {
 	qglPopMatrix();
 }
 
+#else
+void RB_RenderFlares(void)
+{
+}
+#endif

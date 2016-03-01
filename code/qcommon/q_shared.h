@@ -518,6 +518,16 @@ static ID_INLINE float Q_fabs(float x) {
 #define Q_fabs __fabsf
 #endif
 
+#elif idarm
+static ID_INLINE float Q_rsqrt(float number)
+{
+	return 1.0 / sqrtf(number);
+}
+
+static ID_INLINE float Q_fabs(float x)
+{
+	return fabsf(x);
+}
 #else
 float Q_fabs( float f );
 float Q_rsqrt( float f );		// reciprocal square root

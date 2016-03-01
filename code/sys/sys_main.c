@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <ctype.h>
 #include <errno.h>
 
-#ifndef DEDICATED
+#if !defined(DEDICATED) && !defined(__ANDROID__)
 #ifdef USE_LOCAL_HEADERS
 #	include "SDL.h"
 #	include "SDL_cpuinfo.h"
@@ -134,7 +134,7 @@ Sys_GetClipboardData
 */
 char *Sys_GetClipboardData(void)
 {
-#ifdef DEDICATED
+#if defined(DEDICATED) || defined(__ANDROID__)
 	return NULL;
 #else
 	char *data = NULL;
@@ -234,7 +234,7 @@ static __attribute__ ((noreturn)) void Sys_Exit( int exitCode )
 {
 	CON_Shutdown( );
 
-#ifndef DEDICATED
+#if !defined(DEDICATED) && !defined(__ANDROID__)
 	SDL_Quit( );
 #endif
 
@@ -273,7 +273,7 @@ cpuFeatures_t Sys_GetProcessorFeatures( void )
 {
 	cpuFeatures_t features = 0;
 
-#ifndef DEDICATED
+#if !defined(DEDICATED) && !defined(__ANDROID__)
 	if( SDL_HasRDTSC( ) )    features |= CF_RDTSC;
 	if( SDL_HasMMX( ) )      features |= CF_MMX;
 	if( SDL_HasSSE( ) )      features |= CF_SSE;
@@ -472,8 +472,16 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 		if(!*topDir)
 			topDir = ".";
 
+#ifndef __ANDROID__
 		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
 		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
+#else
+		Com_Printf("Trying to load \"%s%s\" from \"%s\"...\n", "lib", name, topDir);
+		Com_sprintf(libPath, sizeof(libPath), "%s%c%s%s", topDir, PATH_SEP, "lib", name);
+		/* On android libraries need to be prefixed with 'lib' else the loader
+		 * refuses to load them.
+		 */
+#endif
 
 		if(!(dllhandle = Sys_LoadLibrary(libPath)))
 		{
@@ -611,7 +619,9 @@ int main( int argc, char **argv )
 	int   i;
 	char  commandLine[ MAX_STRING_CHARS ] = { 0 };
 
-#ifndef DEDICATED
+	Com_Printf("Inside Quake3 source!");
+
+#if !defined(DEDICATED) && !defined(__ANDROID__)
 	// SDL version check
 
 	// Compile time
@@ -680,12 +690,24 @@ int main( int argc, char **argv )
 	signal( SIGTERM, Sys_SigHandler );
 	signal( SIGINT, Sys_SigHandler );
 
+#if !defined(__ANDROID__)
 	while( 1 )
 	{
 		IN_Frame( );
 		Com_Frame( );
 	}
+#endif
 
 	return 0;
 }
 
+void nextFrame(void)
+{
+	IN_Frame( );
+	Com_Frame( );
+}
+
+int q3main(int argc, char **argv)
+{
+    return main(argc, argv);
+}
