@@ -870,3 +870,42 @@ void GLimp_EndFrame( void )
 		r_fullscreen->modified = qfalse;
 	}
 }
+
+#ifdef __ANDROID__
+extern void glClipPlanef (GLenum plane, const GLfloat *equation);
+void glClipPlane (GLenum plane, const GLdouble *equation)
+{
+    float plane2[4];
+    plane2[0] = equation[0];
+    plane2[1] = equation[1];
+    plane2[2] = equation[2];
+    plane2[3] = equation[3];
+    glClipPlanef(plane, plane2);
+}
+
+void glDepthRange (GLclampd zNear, GLclampd zFar)
+{
+    glDepthRangef(zNear, zFar);
+}
+
+extern void glOrthof (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
+void glOrtho (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
+{
+    glOrthof (left, right, bottom, top, zNear, zFar);
+}
+
+void glColor3f(GLfloat red, GLfloat green, GLfloat blue)
+{
+    glColor4f(red, green, blue, 1.0f);
+}
+
+void glDrawBuffer(GLenum mode)
+{
+}
+
+extern void glClearDepthf (GLclampf d);
+void glClearDepth (GLclampd depth)
+{
+    glClearDepthf(depth);
+}
+#endif

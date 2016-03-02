@@ -363,6 +363,7 @@ static float	s_skyTexCoords[SKY_SUBDIVISIONS+1][SKY_SUBDIVISIONS+1][2];
 
 static void DrawSkySide( struct image_s *image, const int mins[2], const int maxs[2] )
 {
+#ifndef __ANDROID__
 	int s, t;
 
 	GL_Bind( image );
@@ -382,6 +383,32 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 
 		qglEnd();
 	}
+#else
+	int s, t, i = 0;
+	int size;
+	glIndex_t *indicies;
+
+	size = (maxs[1] - mins[1]) * (maxs[0] - mins[0] + 1);
+	indicies = ri.Hunk_AllocateTempMemory(sizeof(glIndex_t) * size);
+
+	GL_Bind( image );
+
+	for ( t = mins[1]+HALF_SKY_SUBDIVISIONS; t < maxs[1]+HALF_SKY_SUBDIVISIONS; t++ )
+	{
+		for ( s = mins[0]+HALF_SKY_SUBDIVISIONS; s <= maxs[0]+HALF_SKY_SUBDIVISIONS; s++ )
+		{
+			indicies[i++] = t * (SKY_SUBDIVISIONS + 1) + s;
+			indicies[i++] = (t + 1) * (SKY_SUBDIVISIONS + 1) + s;
+		}
+	}
+
+	qglDisableClientState(GL_COLOR_ARRAY);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglTexCoordPointer(2, GL_FLOAT, 0, s_skyTexCoords);
+	qglVertexPointer(3, GL_FLOAT, 0, s_skyPoints);
+	qglDrawElements(GL_TRIANGLE_STRIP, i, GL_INDEX_TYPE, indicies);
+	ri.Hunk_FreeTempMemory(indicies);
+#endif
 }
 
 static void DrawSkyBox( shader_t *shader )

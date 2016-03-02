@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   This file deals with applying shaders to surface data in the tess struct.
 */
 
+#ifndef __ANDROID__
 /*
 ================
 R_ArrayElementDiscrete
@@ -152,6 +153,7 @@ static void R_DrawStripElements( int numIndexes, const glIndex_t *indexes, void 
 	qglEnd();
 }
 
+#endif /*__ANDROID__*/
 
 
 /*
@@ -164,6 +166,7 @@ without compiled vertex arrays.
 ==================
 */
 static void R_DrawElements( int numIndexes, const glIndex_t *indexes ) {
+#ifndef __ANDROID__
 	int		primitives;
 
 	primitives = r_primitives->integer;
@@ -197,6 +200,9 @@ static void R_DrawElements( int numIndexes, const glIndex_t *indexes ) {
 	}
 
 	// anything else will cause no drawing
+#else /*__ANDROID__*/
+	qglDrawElements(GL_TRIANGLES, numIndexes, GL_INDEX_TYPE, indexes);
+#endif /*__ANDROID__*/
 }
 
 
@@ -288,12 +294,26 @@ Draws vertex normals for debugging
 static void DrawNormals (shaderCommands_t *input) {
 	int		i;
 	vec3_t	temp;
+#ifndef __ANDROID__
+#else
+	vec3_t verts[2 * SHADER_MAX_VERTEXES];
+	glIndex_t indicies[2 * SHADER_MAX_VERTEXES];
+
+	for (i = 0; i < input->numVertexes; i++) {
+		VectorCopy(input->xyz[i], verts[i * 2]);
+		VectorMA(input->xyz[i], 2, input->normal[i], temp);
+		VectorCopy(temp, verts[(i * 2) + 1]);
+		indicies[(i * 2)] = i * 2;
+		indicies[(i * 2) + 1] = (i * 2) + 1;
+	}
+#endif
 
 	GL_Bind( tr.whiteImage );
 	qglColor3f (1,1,1);
 	qglDepthRange( 0, 0 );	// never occluded
 	GL_State( GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE );
 
+#ifndef __ANDROID__
 	qglBegin (GL_LINES);
 	for (i = 0 ; i < input->numVertexes ; i++) {
 		qglVertex3fv (input->xyz[i]);
@@ -301,6 +321,10 @@ static void DrawNormals (shaderCommands_t *input) {
 		qglVertex3fv (temp);
 	}
 	qglEnd ();
+#else
+	qglVertexPointer(3, GL_FLOAT, 0, verts);
+	qglDrawElements(GL_LINES, i, GL_INDEX_TYPE, indicies);
+#endif
 
 	qglDepthRange( 0, 1 );
 }
@@ -352,11 +376,13 @@ static void DrawMultitextured( shaderCommands_t *input, int stage ) {
 
 	GL_State( pStage->stateBits );
 
+#ifndef __ANDROID__
 	// this is an ugly hack to work around a GeForce driver
 	// bug with multitexture and clip planes
 	if ( backEnd.viewParms.isPortal ) {
 		qglPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	}
+#endif
 
 	//
 	// base
@@ -1173,6 +1199,12 @@ void RB_StageIteratorGeneric( void )
 
 	input = &tess;
 	shader = input->shader;
+
+#ifndef __ANDROID__
+#else
+	if (!input->numVertexes)
+		return;
+#endif
 
 	RB_DeformTessGeometry();
 

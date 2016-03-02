@@ -34,6 +34,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <fcntl.h>
 #include <sys/time.h>
 
+#ifdef __ANDROID__
+#include <android/log.h>
+#endif
+
 /*
 =============================================================
 tty console routines
@@ -518,10 +522,14 @@ void CON_Print( const char *msg )
 
 	CON_Hide( );
 
+#ifndef __ANDROID__
 	if( com_ansiColor && com_ansiColor->integer )
 		Sys_AnsiColorPrint( msg );
 	else
 		fputs( msg, stderr );
+#else
+	__android_log_print(ANDROID_LOG_DEBUG, "Quake_NATIVE", "%s", msg);
+#endif
 
 	if (!ttycon_on) {
 		// CON_Hide didn't do anything.

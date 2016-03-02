@@ -291,7 +291,11 @@ static void RB_SurfaceBeam( void )
 	int	i;
 	vec3_t perpvec;
 	vec3_t direction, normalized_direction;
+#ifndef __ANDROID__
 	vec3_t	start_points[NUM_BEAM_SEGS], end_points[NUM_BEAM_SEGS];
+#else
+	vec3_t	points[NUM_BEAM_SEGS * 2];
+#endif
 	vec3_t oldorigin, origin;
 
 	e = &backEnd.currentEntity->e;
@@ -317,9 +321,14 @@ static void RB_SurfaceBeam( void )
 
 	for ( i = 0; i < NUM_BEAM_SEGS ; i++ )
 	{
+#ifndef __ANDROID__
 		RotatePointAroundVector( start_points[i], normalized_direction, perpvec, (360.0/NUM_BEAM_SEGS)*i );
 //		VectorAdd( start_points[i], origin, start_points[i] );
 		VectorAdd( start_points[i], direction, end_points[i] );
+#else
+		RotatePointAroundVector(points[i * 2], normalized_direction, perpvec, (360.0 / NUM_BEAM_SEGS) * i);
+		VectorAdd(points[i * 2], direction, points[i * 2 + 1]);
+#endif
 	}
 
 	GL_Bind( tr.whiteImage );
@@ -328,12 +337,17 @@ static void RB_SurfaceBeam( void )
 
 	qglColor3f( 1, 0, 0 );
 
+#ifndef __ANDROID__
 	qglBegin( GL_TRIANGLE_STRIP );
 	for ( i = 0; i <= NUM_BEAM_SEGS; i++ ) {
 		qglVertex3fv( start_points[ i % NUM_BEAM_SEGS] );
 		qglVertex3fv( end_points[ i % NUM_BEAM_SEGS] );
 	}
 	qglEnd();
+#else
+	qglVertexPointer(3, GL_FLOAT, 0, points);
+	qglDrawArrays(GL_TRIANGLE_STRIP, 0, NUM_BEAM_SEGS * 2);
+#endif
 }
 
 //================================================================================
@@ -1159,9 +1173,30 @@ Draws x/y/z lines from the origin for orientation debugging
 ===================
 */
 static void RB_SurfaceAxis( void ) {
+
+#ifndef __ANDROID__
+#else
+	byte colors[3][4] = {
+		{255, 0, 0, 255},
+		{0, 255, 0, 255},
+		{0, 0, 255, 255}
+	};
+	vec3_t verts[6] = {
+		{0.0f, 0.0f, 0.0f},
+		{16.0f, 0.0f, 0.0f},
+		{0.0f, 0.0f, 0.0f},
+		{0.0f, 16.0f, 0.0f},
+		{0.0f, 0.0f, 0.0f},
+		{0.0f, 0.0f, 16.0f}
+	};
+	glIndex_t indicies[6] = { 0, 1, 0, 2, 0, 3 };
+#endif
+
 	GL_Bind( tr.whiteImage );
 	GL_State( GLS_DEFAULT );
 	qglLineWidth( 3 );
+
+#ifndef __ANDROID__
 	qglBegin( GL_LINES );
 	qglColor3f( 1,0,0 );
 	qglVertex3f( 0,0,0 );
@@ -1173,6 +1208,12 @@ static void RB_SurfaceAxis( void ) {
 	qglVertex3f( 0,0,0 );
 	qglVertex3f( 0,0,16 );
 	qglEnd();
+#else
+	qglEnableClientState(GL_COLOR_ARRAY);
+	qglColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
+	qglVertexPointer(3, GL_FLOAT, 0, verts);
+	qglDrawElements(GL_LINES, 6, GL_INDEX_TYPE, indicies);
+#endif
 	qglLineWidth( 1 );
 }
 

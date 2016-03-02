@@ -1430,7 +1430,10 @@ int FS_FindVM(void **startSearch, char *found, int foundlen, const char *name, i
 		Com_Error(ERR_FATAL, "Filesystem call made without initialization");
 
 	if(enableDll)
-		Com_sprintf(dllName, sizeof(dllName), "%s" ARCH_STRING DLL_EXT, name);
+		Com_sprintf(dllName, sizeof(dllName), "lib" "%s" ARCH_STRING DLL_EXT, name);
+		/* On android libraries need to be prefixed with 'lib' else the loader
+		 * refuses to load them.
+		 */
 
 	Com_sprintf(qvmName, sizeof(qvmName), "vm/%s.qvm", name);
 
@@ -3357,6 +3360,14 @@ static void FS_Startup( const char *gameName )
 			FS_AddGameDirectory(fs_homepath->string, fs_gamedirvar->string);
 		}
 	}
+
+#if defined(__ANDROID__)
+	FS_AddGameDirectory( fs_basepath->string, "");
+	/* The libraries are shipped in the package directory and can't be loaded from
+	 * e.g. the sdcard because it seems to be mounted noexec or the loader just doesn't
+	 * allow it.
+	 */
+#endif
 
 #ifndef STANDALONE
 	if(!com_standalone->integer)

@@ -472,8 +472,16 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 		if(!*topDir)
 			topDir = ".";
 
+#ifndef __ANDROID__
 		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
 		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
+#else
+		Com_Printf("Trying to load \"%s%s\" from \"%s\"...\n", "lib", name, topDir);
+		Com_sprintf(libPath, sizeof(libPath), "%s%c%s%s", topDir, PATH_SEP, "lib", name);
+		/* On android libraries need to be prefixed with 'lib' else the loader
+		 * refuses to load them.
+		 */
+#endif
 
 		if(!(dllhandle = Sys_LoadLibrary(libPath)))
 		{

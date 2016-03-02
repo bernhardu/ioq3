@@ -140,6 +140,19 @@ int R_SumOfUsedImages( void ) {
 	return total;
 }
 
+#ifndef GL_EXT_texture_compression_latc
+#define GL_COMPRESSED_LUMINANCE_LATC1_EXT 0x8C70
+#define GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT 0x8C71
+#define GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT 0x8C72
+#define GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT 0x8C73
+#endif
+
+#ifndef GL_EXT_texture_compression_s3tc
+#define GL_COMPRESSED_RGB_S3TC_DXT1_EXT   0x83F0
+#define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT  0x83F1
+#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT  0x83F2
+#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT  0x83F3
+#endif
 /*
 ===============
 R_ImageList_f
@@ -180,11 +193,13 @@ void R_ImageList_f( void ) {
 				format = "LATC ";
 				// 128 bits per 16 pixels, so 1 byte per pixel
 				break;
+#ifndef __ANDROID__
 			case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
 				format = "DXT1 ";
 				// 64 bits per 16 pixels, so 4 bits per pixel
 				estSize /= 2;
 				break;
+#endif
 			case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
 				format = "DXT5 ";
 				// 128 bits per 16 pixels, so 1 byte per pixel
@@ -198,28 +213,36 @@ void R_ImageList_f( void ) {
 				// same as DXT1?
 				estSize /= 2;
 				break;
+#ifndef __ANDROID__
 			case GL_RGBA4:
 			case GL_RGBA8:
+#endif
 			case GL_RGBA:
 				format = "RGBA ";
 				// 4 bytes per pixel
 				estSize *= 4;
 				break;
+#ifndef __ANDROID__
 			case GL_LUMINANCE8:
 			case GL_LUMINANCE16:
+#endif
 			case GL_LUMINANCE:
 				format = "L    ";
 				// 1 byte per pixel?
 				break;
+#ifndef __ANDROID__
 			case GL_RGB5:
 			case GL_RGB8:
+#endif
 			case GL_RGB:
 				format = "RGB  ";
 				// 3 bytes per pixel?
 				estSize *= 3;
 				break;
+#ifndef __ANDROID__
 			case GL_LUMINANCE8_ALPHA8:
 			case GL_LUMINANCE16_ALPHA16:
+#endif
 			case GL_LUMINANCE_ALPHA:
 				format = "LA   ";
 				// 2 bytes per pixel?
@@ -650,6 +673,7 @@ static void Upload32( unsigned *data,
 		}
 	}
 
+#ifndef __ANDROID__
 	if(lightMap)
 	{
 		if(r_greyscale->integer)
@@ -658,6 +682,9 @@ static void Upload32( unsigned *data,
 			internalFormat = GL_RGB;
 	}
 	else
+#else
+	if(!lightMap)
+#endif
 	{
 		for ( i = 0; i < c; i++ )
 		{
@@ -682,6 +709,7 @@ static void Upload32( unsigned *data,
 		// select proper internal format
 		if ( samples == 3 )
 		{
+#ifndef __ANDROID__
 			if(r_greyscale->integer)
 			{
 				if(r_texturebits->integer == 16)
@@ -714,9 +742,13 @@ static void Upload32( unsigned *data,
 					internalFormat = GL_RGB;
 				}
 			}
+#else
+			internalFormat = GL_RGBA;
+#endif
 		}
 		else if ( samples == 4 )
 		{
+#ifndef __ANDROID__
 			if(r_greyscale->integer)
 			{
 				if(r_texturebits->integer == 16)
@@ -741,6 +773,9 @@ static void Upload32( unsigned *data,
 					internalFormat = GL_RGBA;
 				}
 			}
+#else
+			internalFormat = GL_RGBA;
+#endif
 		}
 	}
 
@@ -810,17 +845,21 @@ done:
 
 	if (mipmap)
 	{
+#ifndef __ANDROID__
 		if ( textureFilterAnisotropic )
 			qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
 					(GLint)Com_Clamp( 1, maxAnisotropy, r_ext_max_anisotropy->integer ) );
+#endif
 
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
 	else
 	{
+#ifndef __ANDROID__
 		if ( textureFilterAnisotropic )
 			qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1 );
+#endif
 
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
