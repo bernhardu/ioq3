@@ -1,0 +1,12 @@
+project/bin
+project/build.xml
+project/gen
+project/libs
+project/local.properties
+project/obj
+project/proguard-project.txt
+project/project.properties
+project/res/drawable-[hml]dpi/icon.png
+SDL2-2.0.4/
+SDL2-2.0.4-build/
+SDL2-2.0.4.tar.gz
