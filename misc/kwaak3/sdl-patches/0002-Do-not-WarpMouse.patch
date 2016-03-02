@@ -1,0 +1,25 @@
+From 133ccfed5cf8a8c3be1e5e74ca43981ae83e4474 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bernhard=20=C3=9Cbelacker?= <bernhardu@vr-web.de>
+Date: Wed, 2 Mar 2016 19:37:49 +0100
+Subject: Do not WarpMouse.
+
+---
+ src/events/SDL_mouse.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/events/SDL_mouse.c b/src/events/SDL_mouse.c
+index 7793de8..b764004 100644
+--- a/src/events/SDL_mouse.c
++++ b/src/events/SDL_mouse.c
+@@ -215,7 +215,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
+             mouse->last_y = center_y;
+             return 0;
+         }
+-        SDL_WarpMouseInWindow(window, center_x, center_y);
++        //SDL_WarpMouseInWindow(window, center_x, center_y);
+     }
+ 
+     if (relative) {
+-- 
+2.1.4
+

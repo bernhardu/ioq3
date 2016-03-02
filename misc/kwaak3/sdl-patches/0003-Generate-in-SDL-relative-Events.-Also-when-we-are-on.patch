@@ -1,0 +1,47 @@
+From 231b603927f0d51865ef18fb466294057d351011 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bernhard=20=C3=9Cbelacker?= <bernhardu@vr-web.de>
+Date: Wed, 2 Mar 2016 19:52:29 +0100
+Subject: Generate in SDL relative Events. Also when we are on the edge.
+
+See:
+https://code.google.com/p/android/issues/detail?id=61779
+https://code.google.com/p/android/issues/detail?id=76739
+---
+ src/video/android/SDL_androidmouse.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/src/video/android/SDL_androidmouse.c b/src/video/android/SDL_androidmouse.c
+index 3e9c0af..0e7c4af 100644
+--- a/src/video/android/SDL_androidmouse.c
++++ b/src/video/android/SDL_androidmouse.c
+@@ -40,6 +40,10 @@
+ 
+ void Android_OnMouse( int androidButton, int action, float x, float y) {
+     static Uint8 SDLButton;
++    static int last_x;
++    static int last_y;
++    int relx;
++    int rely;
+ 
+     if (!Android_Window) {
+         return;
+@@ -66,7 +70,15 @@ void Android_OnMouse( int androidButton, int action, float x, float y) {
+             break;
+ 
+         case ACTION_HOVER_MOVE:
+-            SDL_SendMouseMotion(Android_Window, 0, 0, x, y);
++            relx = x - last_x;
++            rely = y - last_y;
++            if (relx == 0 && last_x == (int)x && (int)x == 0)   relx = -5;
++            if (relx == 0 && last_x == (int)x && (int)x == 853) relx =  5;
++            if (rely == 0 && last_y == (int)y && (int)y == 0)   rely = -5;
++            if (rely == 0 && last_y == (int)y && (int)y == 479) rely =  5;
++            SDL_SendMouseMotion(Android_Window, 0, 1, relx, rely);
++            last_x = x;
++            last_y = y;
+             break;
+ 
+         case ACTION_SCROLL:
+-- 
+2.1.4
+
